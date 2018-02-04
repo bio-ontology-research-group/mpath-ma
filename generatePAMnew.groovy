@@ -1,16 +1,14 @@
 @Grapes([
 	  @Grab(group='org.slf4j', module='slf4j-simple', version='1.6.1'),
-          @Grab(group='org.semanticweb.elk', module='elk-owlapi', version='0.4.3'),
           @Grab(group='net.sourceforge.owlapi', module='owlapi-api', version='4.2.5'),
           @Grab(group='net.sourceforge.owlapi', module='owlapi-apibinding', version='4.2.5'),
           @Grab(group='net.sourceforge.owlapi', module='owlapi-impl', version='4.2.5'),
-          @Grab(group='net.sourceforge.owlapi', module='owlapi-parsers', version='4.2.5')
+          @Grab(group='net.sourceforge.owlapi', module='owlapi-parsers', version='4.2.5'),
+          @Grab(group='net.sourceforge.owlapi', module='org.semanticweb.hermit', version='1.3.8.413')
         ])
 
 import org.semanticweb.owlapi.model.parameters.*
-import org.semanticweb.elk.owlapi.ElkReasonerFactory;
-import org.semanticweb.elk.owlapi.ElkReasonerConfiguration
-import org.semanticweb.elk.reasoner.config.*
+import org.semanticweb.HermiT.ReasonerFactory;
 import org.semanticweb.owlapi.apibinding.OWLManager;
 import org.semanticweb.owlapi.reasoner.*
 import org.semanticweb.owlapi.reasoner.structural.StructuralReasoner
@@ -52,15 +50,10 @@ OWLDataFactory fac = manager.getOWLDataFactory()
 
 ConsoleProgressMonitor progressMonitor = new ConsoleProgressMonitor()
 OWLReasonerConfiguration config = new SimpleConfiguration(progressMonitor)
-ElkReasonerFactory f = new ElkReasonerFactory()
-
-
+ReasonerFactory rf = new ReasonerFactory()
 
 def maOnt = manager.loadOntologyFromOntologyDocument(new File('ma.owl'))
-OWLReasoner maReasoner = f.createReasoner(maOnt,config)
-
 def mpathOnt = manager.loadOntologyFromOntologyDocument(new File('mpath.owl'))
-OWLReasoner mpathReasoner = f.createReasoner(mpathOnt,config)
 
 IRI mpathMaOntI= IRI.create("http://phenomebrowser.net/pam/")
 
@@ -110,7 +103,7 @@ new File("completeDataID.csv").splitEachLine(",") { line ->
     def ma = fac.getOWLClass(IRI.create("http://purl.obolibrary.org/obo/"+maID))
     def mpath = fac.getOWLClass(IRI.create("http://purl.obolibrary.org/obo/"+mpathID))
 
-    ////affects
+    //affects
     def ce = null
     if (!transitive) {
       ce = fac.getOWLObjectSomeValuesFrom(hp, fac.getOWLObjectIntersectionOf(mpath, fac.getOWLObjectSomeValuesFrom(affects, ma)))
@@ -146,7 +139,15 @@ new File("completeDataID.csv").splitEachLine(",") { line ->
   }
 }
 
-OWLReasoner mpathMaReasoner = f.createReasoner(mpathMaOnt,config)
+OWLReasoner mpathMaReasoner = rf.createReasoner(mpathMaOnt,config)
+
+// Add inferred classes using HermiT reasoner
+List<InferredAxiomGenerator<? extends OWLAxiom>> generator = new ArrayList<InferredAxiomGenerator<? extends OWLAxiom>>();
+generator.add(new InferredSubClassAxiomGenerator());
+generator.add(new InferredEquivalentClassAxiomGenerator());
+InferredOntologyGenerator iog = new InferredOntologyGenerator(mpathMaReasoner, generator);
+iog.fillOntology(fac, mpathMaOnt);
+
 mpathMaReasoner.getSubClasses(fac.getOWLThing(), true).each { println it }
 println("Number of axioms: " + mpathMaOnt.getAxiomCount());
 
