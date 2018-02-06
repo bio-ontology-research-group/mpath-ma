@@ -139,7 +139,7 @@ new File("completeDataID.csv").splitEachLine(",") { line ->
     axiom = fac.getOWLAnnotationAssertionAxiom(newclass.getIRI(), label)
     manager.applyChange(new AddAxiom(mpathMaOnt, axiom));
 
-    id = fac.getOWLAnnotation(fac.getRDFSIsDefinedBy(),fac.getOWLLiteral(((map)?"MAP:":"PAM:")+maID.replaceAll("MA_","")+mpathID.replaceAll("MPATH_","")));
+    id = fac.getOWLAnnotation(fac.getRDFSIsDefinedBy(),fac.getOWLLiteral(((map)?"MAP:":"PAM:")+maID.replaceAll("MA_","")+'x'+mpathID.replaceAll("MPATH_","")));
     axiom = fac.getOWLAnnotationAssertionAxiom(newclass.getIRI(), id)
     manager.applyChange(new AddAxiom(mpathMaOnt, axiom));
 
