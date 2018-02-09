@@ -86,35 +86,10 @@ OWLAnnotation id = fac.getOWLAnnotation(fac.getRDFSIsDefinedBy(),fac.getOWLLiter
 axiom = fac.getOWLAnnotationAssertionAxiom(L.getIRI(), id)
 manager.applyChange(new AddAxiom(mpathMaOnt, axiom));
 
-def Affects = null
-def Lesions = null
 if(map){
-	fac.getOWLEquivalentClassesAxiom(L, fac.getOWLObjectIntersectionOf(fac.getOWLObjectSomeValuesFrom(haslesion, mpath_0),ma_0000001))
-	Lesions = fac.getOWLClass(IRI.create("http://phenomebrowser.net/map/MALesions_0000001"))
-	label = fac.getOWLAnnotation(fac.getRDFSLabel(),fac.getOWLLiteral("MA lesions"));
-	axiom = fac.getOWLAnnotationAssertionAxiom(Lesions.getIRI(), label)
-	manager.applyChange(new AddAxiom(mpathMaOnt, axiom));
-
-	id = fac.getOWLAnnotation(fac.getRDFSIsDefinedBy(),fac.getOWLLiteral("MALesions:0000001"));
-	axiom = fac.getOWLAnnotationAssertionAxiom(Lesions.getIRI(), id)
-	manager.applyChange(new AddAxiom(mpathMaOnt, axiom));
-
 	manager.addAxiom(mpathMaOnt, fac.getOWLEquivalentClassesAxiom(fac.getOWLThing(),fac.getOWLObjectSomeValuesFrom(haslesion, fac.getOWLThing())))
-	manager.addAxiom(mpathMaOnt, fac.getOWLEquivalentClassesAxiom(Lesions, fac.getOWLObjectIntersectionOf(fac.getOWLObjectSomeValuesFrom(haslesion,fac.getOWLThing()),fac.getOWLObjectSomeValuesFrom(ma_part_of,ma_0000001))));
 	}else{
-		fac.getOWLEquivalentClassesAxiom(L, fac.getOWLObjectIntersectionOf(mpath_0,fac.getOWLObjectSomeValuesFrom(affects, ma_0000001)))
-		Affects = fac.getOWLClass(IRI.create("http://phenomebrowser.net/pam/MPATHAffects_0"))
-		label = fac.getOWLAnnotation(fac.getRDFSLabel(),fac.getOWLLiteral("MPATH Affects"));
-		axiom = fac.getOWLAnnotationAssertionAxiom(Affects.getIRI(), label)
-		manager.applyChange(new AddAxiom(mpathMaOnt, axiom));
-
-		id = fac.getOWLAnnotation(fac.getRDFSIsDefinedBy(),fac.getOWLLiteral("MPATHAffects:0"));
-		axiom = fac.getOWLAnnotationAssertionAxiom(Affects.getIRI(), id)
-		manager.applyChange(new AddAxiom(mpathMaOnt, axiom));
-
 		manager.addAxiom(mpathMaOnt, fac.getOWLEquivalentClassesAxiom(fac.getOWLThing(),fac.getOWLObjectSomeValuesFrom(affects, fac.getOWLThing())))
-		manager.addAxiom(mpathMaOnt, fac.getOWLEquivalentClassesAxiom(Affects, fac.getOWLObjectIntersectionOf(mpath_0, fac.getOWLObjectSomeValuesFrom(affects, fac.getOWLObjectSomeValuesFrom(ma_part_of,fac.getOWLThing())))))
-
 	}
 
 
@@ -176,38 +151,6 @@ MAset.each{
 
 		    fac.getOWLEquivalentClassesAxiom(newclass, ce)
 		    manager.addAxiom(mpathMaOnt, fac.getOWLEquivalentClassesAxiom(newclass, ce))
-
-		    //adding lesions or affects classes
-		    if(map){
-		    	def lesionclass = fac.getOWLClass(IRI.create("http://phenomebrowser.net/map/MALesions"+macode))
-				label = fac.getOWLAnnotation(fac.getRDFSLabel(),fac.getOWLLiteral(malabel+" lesions"));
-				axiom = fac.getOWLAnnotationAssertionAxiom(lesionclass.getIRI(), label)
-				manager.applyChange(new AddAxiom(mpathMaOnt, axiom));
-
-				id = fac.getOWLAnnotation(fac.getRDFSIsDefinedBy(),fac.getOWLLiteral("MALesions:"+macode));
-				axiom = fac.getOWLAnnotationAssertionAxiom(lesionclass.getIRI(), id)
-				manager.applyChange(new AddAxiom(mpathMaOnt, axiom))
-
-				manager.addAxiom(mpathMaOnt, fac.getOWLSubClassOfAxiom(lesionclass,Lesions))
-				manager.addAxiom(mpathMaOnt, fac.getOWLEquivalentClassesAxiom(lesionclass, fac.getOWLObjectIntersectionOf(fac.getOWLObjectSomeValuesFrom(haslesion,fac.getOWLThing()),fac.getOWLObjectSomeValuesFrom(ma_part_of,ma))));
-
-		    	}else{
-		    		def affectclass = fac.getOWLClass(IRI.create("http://phenomebrowser.net/pam/MPATHAffects"+mpathcode))
-				    label = fac.getOWLAnnotation(fac.getRDFSLabel(),fac.getOWLLiteral(mpathlabel+" affects"));
-				    axiom = fac.getOWLAnnotationAssertionAxiom(affectclass.getIRI(), label)
-				    manager.applyChange(new AddAxiom(mpathMaOnt, axiom));
-
-				    id = fac.getOWLAnnotation(fac.getRDFSIsDefinedBy(),fac.getOWLLiteral("MPATHAffects:"+mpathcode))
-				    axiom = fac.getOWLAnnotationAssertionAxiom(affectclass.getIRI(), id)
-				    manager.applyChange(new AddAxiom(mpathMaOnt, axiom));
-
-				    manager.addAxiom(mpathMaOnt, fac.getOWLSubClassOfAxiom(affectclass,Affects))
-				    manager.addAxiom(mpathMaOnt, fac.getOWLEquivalentClassesAxiom(affectclass, fac.getOWLObjectIntersectionOf(mpath, fac.getOWLObjectSomeValuesFrom(affects, fac.getOWLObjectSomeValuesFrom(ma_part_of,fac.getOWLThing())))));
-		    	}
-
-
-
-
 			}	
 
 		}
