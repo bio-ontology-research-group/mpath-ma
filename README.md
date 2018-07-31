@@ -32,7 +32,7 @@
    
    MpathMAAnnotations.groovy  to generate the annotations
    
-   piarwiseSimMpathMa.groovy  to generate the mouse to mouse similarity matrex
+   piarwiseSimMpathMa.groovy  to generate the mouse to mouse similarity matrix
    
    ## Clustering, clustering purity, Area under purity curves:
    we applied four methods for clustering in this analysis: complete linkage(CL), Unweighted Pair Group Method with Arithmetic Mean(UPGMA),
