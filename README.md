@@ -1,14 +1,14 @@
 # mpath-ma
 
-## This folder contains the files needed to reperforme the following tasks:
+## This folder contains the files needed to perform the following tasks:
 ## Generating MAP, MAPT, PAM, PAMT ontologies:
-  for this task you can regenarate those ontologies using the generatePAM_MAP.groovy. 
+  for this task you can regenerate those ontologies using the generatePAM_MAP.groovy. 
   
   You can also specify the following optional arguments:
    
-   **-m**: to select MA ontology as a primary axix of classifition for the ontology, if not selected it will be MPATH
+   **-m**: to select MA ontology as a primary axis of classification for the ontology, if not selected it will be MPATH
    
-   **-t**: to select  the tansitivity option
+   **-t**: to select  the transitivity option
    
    to generate MAP : 
    ```
@@ -28,9 +28,14 @@
    ```
    
    ## Compute semantic similarity:
+   To compute semantic similarity we used the following files:
    
-   ## Clustreing, clustering puirity, Area under puirity curves:
-   we applied four methods for clustering in this anaysis: complete linkage(CL), Unweighted Pair Group Method with Arithmetic Mean(UPGMA),
+   MpathMAAnnotations.groovy  to generate the annotations
+   
+   piarwiseSimMpathMa.groovy  to generate the mouse to mouse similarity matrex
+   
+   ## Clustering, clustering purity, Area under purity curves:
+   we applied four methods for clustering in this analysis: complete linkage(CL), Unweighted Pair Group Method with Arithmetic Mean(UPGMA),
    neighbor joining(NJ) and K-medoids using the following files and folders:
    
    clustering and statistical analysis/NJ_CL_UPGMA_clustering.m
@@ -46,7 +51,7 @@
    
    clustering and statistical analysis/kendall.py
    
-   clustering and statistical analysis/EAcode
+   clustering and statistical analysis/EAcode 
    
    ## ROC and ROC AUC:
    for plotting ROC curves and calculating ROC-AUC we used the following files and folders:
