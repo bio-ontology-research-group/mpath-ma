@@ -26,6 +26,8 @@
    ```
    generatePAM_MAP.groovy -t -o PAMT.owl
    ```
+   ## OQuaRE measures:
+   To compute TMOnto, WMCOnto and DITOnto we used OQuaRE_measures.groovy
    
    ## Compute semantic similarity:
    To compute semantic similarity we used the following files:
