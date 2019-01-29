@@ -1,3 +1,8 @@
+//--------------------------------------------------------
+// this is a modified vesion of the code by @coolmaksat
+// original code : https://github.com/bio-ontology-research-group/pgsim/blob/master/SimPairwise.groovy
+//--------------------------------------------------------
+
 @Grab(group='com.github.sharispe', module='slib-sml', version='0.9.1')
 @Grab(group='org.codehaus.gpars', module='gpars', version='1.1.0')
 
