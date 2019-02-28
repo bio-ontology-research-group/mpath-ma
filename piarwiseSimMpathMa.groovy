@@ -158,10 +158,11 @@ for (String annot:ls)
 
   def result = new Double[mice.size()][mice.size()]
   for (i = 0; i < mice.size(); i++) {
-    for (j = 0; i < mice.size(); i++) {
+    for (j = 0; j < mice.size(); j++) {
     result[i][j] = 0
   }
   }
+  
 
   for (i = 0; i < mice.size(); i++) {
     for (j = 0; j < mice.size(); j++) {
