@@ -1,60 +1,60 @@
 # Installation and Running Instructions (MacOS)
 
-This guide provides step-by-step instructions to set up and run the Mouse Pathology-Anatomy Mapping project on a MacOS laptop.
+This guide provides the fastest way to set up and run the Mouse Pathology-Anatomy Mapping project on a MacOS laptop using AI assistance.
 
-## 1. Prerequisites (Homebrew)
+## 1. Quick Start (AI-Assisted Setup)
 
-If you don't have Homebrew installed, open your terminal and run:
+If you have `gemini-cli` installed, you can let the AI handle the entire installation and configuration process for you.
+
+1. **Install gemini-cli** (if not already present):
+   ```bash
+   npm install -g @google/gemini-cli
+   ```
+
+2. **Run the following prompt**:
+   Open the project folder and run:
+   ```bash
+   gemini "Set up my MacOS development environment for this project. Install Homebrew (if missing), Java, Groovy, and uv, then run the full analysis pipeline."
+   ```
+
+---
+
+## 2. Manual Installation Steps
+
+If you prefer to install the tools yourself, follow these steps:
+
+### Prerequisites (Homebrew)
 ```bash
 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
 ```
 
-## 2. Install Development Tools
-
-### Java and Groovy
-The mapping and hierarchy extraction scripts require Java and Groovy.
+### Install Development Tools
 ```bash
-brew install openjdk groovy
-```
-*Note: You may need to follow the post-install instructions from `brew` to symlink the openjdk.*
-
-### Python and uv
-The statistical analysis and visualizations require Python, managed by `uv` for easy dependency handling.
-```bash
-brew install uv
+brew install openjdk groovy uv
 ```
 
-### Gemini CLI
-For interactive AI assistance in the terminal:
-```bash
-npm install -g @google/gemini-cli
-```
+## 3. Running the Analysis Pipeline
 
-## 3. Running the Project
+Once the tools are installed, execute the following commands in order:
 
-Follow these steps in order within the project root directory:
+1. **Generate Mappings**:
+   ```bash
+   export JAVA_OPTS="--add-opens java.base/java.lang=ALL-UNNAMED"
+   groovy script/generateMappings.groovy
+   ```
 
-### Step 1: Generate Mappings
-Generate the `mouse_mappings.tsv` file from the raw CSV data.
-```bash
-export JAVA_OPTS="--add-opens java.base/java.lang=ALL-UNNAMED"
-groovy script/generateMappings.groovy
-```
+2. **Extract Hierarchy**:
+   ```bash
+   export JAVA_OPTS="--add-opens java.base/java.lang=ALL-UNNAMED"
+   groovy analysis/extract_hierarchy.groovy
+   ```
 
-### Step 2: Extract Hierarchy
-Extract the transitive closure of the ontology hierarchies.
-```bash
-export JAVA_OPTS="--add-opens java.base/java.lang=ALL-UNNAMED"
-groovy analysis/extract_hierarchy.groovy
-```
-
-### Step 3: Run Statistical Analysis
-Perform the over-representation analysis (ORA) with True Path Rule and generate plots.
-```bash
-uv run --with pandas --with scipy --with matplotlib --with tabulate analysis/perform_stats.py
-```
+3. **Run Statistical Analysis**:
+   ```bash
+   uv run --with pandas --with scipy --with matplotlib --with tabulate analysis/perform_stats.py
+   ```
 
 ## 4. Viewing Results
-- **Summary**: Check `analysis/RQ.md` and `analysis/stats_summary.md`.
-- **Full Data**: See `analysis/enrichments_python_tpr.tsv`.
-- **Plots**: View `analysis/top_enrichments_tpr.png`.
+- **Summary**: `analysis/RQ.md` and `analysis/stats_summary.md`
+- **Full Data**: `analysis/enrichments_python_tpr.tsv`
+- **Plots**: `analysis/top_enrichments_tpr.png`
