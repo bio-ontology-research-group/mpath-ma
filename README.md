@@ -72,4 +72,32 @@
    clustering and statistical analysis/similarities
    
    clustering and statistical analysis/mice.csv    
+
+## Mapping and Over-representation Analysis:
+We implemented a pipeline to map mouse data to multiple ontologies and perform age-controlled over-representation analysis (ORA).
+
+### Mapping Generation
+To generate a comprehensive TSV mapping file including IRIs for MA, MPATH, PAM, and MAP:
+```bash
+export JAVA_OPTS="--add-opens java.base/java.lang=ALL-UNNAMED"
+groovy script/generateMappings.groovy
+```
+This script processes the raw mouse data and produces `mouse_mappings.tsv`.
+
+### Statistical Analysis (ORA)
+To perform the over-representation analysis controlling for categorical age bins (6M, 12M, 20M, LONG) and using the **True Path Rule** for ontology propagation:
+```bash
+# Extract ontology hierarchies
+groovy analysis/extract_hierarchy.groovy
+
+# Run statistical analysis and generate visualizations
+uv run --with pandas --with scipy --with matplotlib --with tabulate analysis/perform_stats.py
+```
+
+### Analysis Results
+Detailed results and documentation can be found in the `analysis/` folder:
+- **analysis/RQ.md**: Research Question and methodology summary.
+- **analysis/stats_summary.md**: Summary of the most significant non-trivial findings.
+- **analysis/enrichments_python_tpr.tsv**: Complete table of 2,300+ significant enrichments.
+- **analysis/top_enrichments_tpr.png**: Visualization of top enrichment ratios.
    
