@@ -100,4 +100,143 @@ Detailed results and documentation can be found in the `analysis/` folder:
 - **analysis/stats_summary.md**: Summary of the most significant non-trivial findings.
 - **analysis/enrichments_python_tpr.tsv**: Complete table of 2,300+ significant enrichments.
 - **analysis/top_enrichments_tpr.png**: Visualization of top enrichment ratios.
-   
+
+## Data Cleaning and PAMT Generation
+
+### Data Cleaning
+We have implemented a script to clean the raw input data (removing bracket issues in IDs) and generate PAMT IRIs for each observation.
+
+To run the cleaning script:
+```bash
+export JAVA_OPTS="--add-opens java.base/java.lang=ALL-UNNAMED"
+groovy script/cleanAndAddPAMT.groovy
+```
+**Input:** `data/Complete data with discs cleaned.csv`  
+**Output:** `data/cleaned_with_pamt.tsv`
+
+This script:
+1.  Reads the raw CSV.
+2.  Removes brackets (`[]`) from MA and MPATH IDs and descriptions.
+3.  Generates a valid PAMT IRI (e.g., `http://phenomebrowser.net/pam/PAM_0000337x119`) for each row based on the MA and MPATH IDs.
+
+### PAMT Ontology Generation (Updated)
+The `generatePAM_MAP.groovy` script has been updated to:
+1.  Use the new data source `data/Complete data with discs cleaned.csv`.
+2.  Include **all base MPATH and MA classes** in the output ontology (merging axioms instead of importing).
+3.  Sanitize input IDs to prevent RDF parser errors (removing brackets).
+4.  Robustly generate labels for "affects" and "has lesion" classes, even when name columns are missing in the source data.
+
+To regenerate the PAMT ontology (PAMTv2):
+```bash
+export JAVA_OPTS="--add-opens java.base/java.lang=ALL-UNNAMED -Xmx4g"
+groovy generatePAM_MAP.groovy -t -o PAMTv2.owl
+```
+
+## Ontology Enrichment Analysis for MPath/MA
+
+This section describes the scripts to perform ontology enrichment analysis on mouse pathology data.
+
+### Overview
+
+The analysis identifies over-represented and under-represented ontology terms (Anatomy, Pathology, and Combined) for various mouse strains, controlled for Sex and Code. It uses `func` (Functional Analysis) tool with hypergeometric test and topology-based refinement.
+
+### Requirements
+
+*   **Python 3.10+**
+*   **uv** (for dependency management)
+*   **func-0.4.10** (compiled and available in `func_bin/`)
+*   **Groovy** (optional, for regenerating ontology structure if needed)
+
+### Setup
+
+1.  Ensure `func_bin/` contains the `func_hyper` executable and related scripts.
+    *   If not, compile `func` in `func-0.4.10/src` and copy/symlink executables to `func_bin`.
+2.  Ensure `data/cleaned_with_pamt.tsv` exists.
+3.  Ensure ontology structure directories (`func_data_pamt`, `func_data_ma`, `func_data_mpath`) exist.
+    *   These are generated from OWL files (`PAMTv2.owl`, `ma.owl`, `mpath.owl`) using `make_func_structure_py.py`.
+
+### Running the Analysis
+
+Use the `run_analysis_final.py` script.
+
+```bash
+uv run --with pandas --with numpy run_analysis_final.py [options]
+```
+
+#### Options
+
+*   `--data PATH`: Path to input TSV file (Default: `data/cleaned_with_pamt.tsv`).
+*   `--output DIR`: Output directory for intermediate func results (Default: `func_results_final`).
+*   `--random-sets N`, `-r N`: Number of random sets for FWER estimation (Default: 10000). **Use 10000 for final publication-quality results.**
+*   `--cutoff N`, `-c N`: Minimum number of hits (genes/lesions) in a group to be considered (Default: 3).
+*   `--p-value P`, `-p P`: P-value cutoff for filtering the final report (Default: 0.05).
+*   `--workers N`, `-w N`: Number of parallel workers (Default: CPU count - 1).
+
+#### Example
+
+Run a quick test:
+```bash
+uv run --with pandas --with numpy run_analysis_final.py -r 100 -c 3
+```
+
+Run full analysis:
+```bash
+uv run --with pandas --with numpy run_analysis_final.py -r 10000 -c 3
+```
+
+### Output
+
+The script produces:
+1.  **`enrichment_results_final.tsv`**: The main result table containing significant terms.
+    *   **Analysis**: Ontology type (PAMT, MA, MPATH).
+    *   **Strain**: Mouse strain.
+    *   **TermID/TermName**: Enriched term.
+    *   **Direction**: "Over" or "Under" representation.
+    *   **Hits**: Number of lesions in target strain with this term.
+    *   **Total**: Number of lesions in target strain total (mapped to root).
+    *   **P_Refin**: Refined P-value (topology-corrected).
+    *   **EffectSize**: Enrichment Factor.
+    *   **FDR_Refin**: Benjamini-Hochberg FDR calculated on Refined P-values.
+    *   **FWER_Orig**: Family-Wise Error Rate from `func` (based on permutation).
+
+### Methodology Details
+
+1.  **Ontology Structure**: Derived from OWL files. `MPATH:0` is used as root for Pathology/PAMT; `owl:Thing` for MA.
+2.  **Controls (Sex & Code)**:
+    *   **Strategy**: Stratum-Restricted Merged Background.
+    *   **Implementation**: For each target strain, we identify the specific combinations of Sex and Code (e.g., "Female/LONG") present in that strain. The background set is then constructed by pooling animals from all *other* strains that belong to these same combinations.
+    *   **Implication**: This controls for confounding by excluding irrelevant strata (e.g., a "Male-only" strain will effectively be compared against a "Male-only" background). However, within the matching strata, data is merged; the analysis does not force the exact *ratio* of strata in the background to match the target (e.g., via downsampling), preserving statistical power at the cost of potential residual confounding if stratum-specific rates differ significantly.
+3.  **Refinement**: `func`'s refinement algorithm is applied to remove redundant superclasses that are significant only due to their subclasses.
+4.  **Statistics**:
+    *   **Raw P-values**: Hypergeometric test.
+    *   **Refined P-values**: From `func` refinement. A value of `-1` indicates the refinement step found no change in significance compared to the parent/raw value (i.e., the node remains significant on its own merits or inherits exact significance).
+    *   **FDR**: Calculated using Benjamini-Hochberg procedure on the **Refined P-values** (grouping by Analysis, Strain, and Direction).
+    *   **Effect Size**: Enrichment Factor calculated as `(Target_Hits / Target_Total) / (Background_Hits / Background_Total)`.
+
+## Semantic Similarity and Clustering Analysis
+
+We provide a suite of tools to analyze the semantic similarity between strains based on their pathology profiles (PAMT ontology terms).
+
+### Scripts
+
+*   **`analysis/compute_weighted_semsim.py`**:
+    *   Computes **Weighted Semantic Similarity** using Cosine Similarity on True-Path-Rule propagated lesion frequency vectors.
+    *   Generates Strain-Strain similarity matrices, clustered heatmaps, and PCA plots.
+    *   Stratified by Global, Sex, and Code.
+    *   **Usage**: `uv run --with pandas --with networkx --with seaborn --with matplotlib --with scikit-learn --with scipy analysis/compute_weighted_semsim.py`
+
+*   **`analysis/compute_mouse_semsim.py`**:
+    *   Performs **Mouse-level analysis** to visualize individual animals.
+    *   Generates PCA and t-SNE plots where each point is a mouse, colored by strain.
+    *   **Usage**: `uv run --with pandas --with networkx --with seaborn --with matplotlib --with scikit-learn analysis/compute_mouse_semsim.py`
+
+*   **`analysis/generate_summary.py`**:
+    *   Generates basic demographic plots and ontology landscape heatmaps (MA vs MPATH).
+    *   **Usage**: `uv run --with pandas --with matplotlib --with seaborn --with tabulate analysis/generate_summary.py`
+
+### Output Structure
+
+Results are organized in `analysis/` subdirectories:
+*   **`analysis/weighted_semsim/`**: Strain-level similarity results.
+*   **`analysis/mouse_level_semsim/`**: Individual mouse embedding plots.
+*   **`analysis/[Global|Sex_X|Code_Y]/`**: Summary statistics and basic plots.
